@@ -6,6 +6,8 @@
 数据集：Mnist
 训练集数据量：60000
 测试集数据量：10000
+time: 34.017232
+precision: 0.810381
 '''
 
 import numpy as np
@@ -13,34 +15,35 @@ import time
 import pandas as pd
 
 
-def loadData(file):
-    '''
-    加载Mnist数据集
-    :param file: 数据集路径
-    :return: list形式的数据集以及标签
-    '''
-    datasets = pd.read_csv(file)
-    column_names = list(datasets.columns.values)[1:]
-    # change the label, if label >=5, label=1, else label=-1
-
-    def transform_label(x):
-        if x >= 5:
-            return 1
-        else:
-            return -1
-
-    datasets['5'] = datasets['5'].apply(lambda x: transform_label(x))
-    labels = list(datasets.iloc[:, 0])
-
-    # get the features of all the data
-    features = []
-
-    for index, row in datasets.iterrows():
-        # normalization
-        row_data = [int(row[name])/255 for name in column_names]
-        features.append(row_data)
-
-    return features, labels
+# def loadData(file):
+#     '''
+#     加载Mnist数据集
+#     :param file: 数据集路径
+#     :return: list形式的数据集以及标签
+#     如果采用这汇总方式加载数据，存在一些问题
+#     '''
+#     datasets = pd.read_csv(file)
+#     column_names = list(datasets.columns.values)[1:]
+#     # change the label, if label >=5, label=1, else label=-1
+#
+#     def transform_label(x):
+#         if x >= 5:
+#             return 1
+#         else:
+#             return -1
+#
+#     datasets['5'] = datasets['5'].apply(lambda x: transform_label(x))
+#     labels = list(datasets.iloc[:, 0])
+#
+#     # get the features of all the data
+#     features = []
+#
+#     for index, row in datasets.iterrows():
+#         # normalization
+#         row_data = [int(row[name])/255 for name in column_names]
+#         features.append(row_data)
+#
+#     return features, labels
 
 
 def load_data(file_path, n):
@@ -128,11 +131,13 @@ class Perceptron:
         result = - result * labels   # (num_example)
         #print("result:", result)
         loss = 0
+        wrong_answer = 0
         for num in result:
             if num > 0:
                 loss += num
+                wrong_answer += 1
 
-        return loss/len(result)
+        return loss/len(result), (1 - wrong_answer/result.shape[0])
 
     def train(self, inputs, labels, num_epochs, learning_rate=1e-4):
         """
@@ -155,7 +160,8 @@ class Perceptron:
                     self.w += learning_rate * labels[j] * inputs1
                     self.bias += learning_rate * labels[j]
 
-            print("After %d steps, the loss is %f" % (i, self.loss_function(inputs, labels)))
+            loss1, precision = self.loss_function(inputs, labels)
+            print("After %d epochs, the loss is %f, the train precision is %f" % (i, loss1, precision))
 
             print("The training step ends.")
 
@@ -177,6 +183,7 @@ class Perceptron:
 
 if __name__ == '__main__':
     print("start")
+    start = time.time()
     train_path = '../MNIST/mnist_train.csv'
     test_path = '../MNIST/mnist_test.csv'
     # (train_features, train_labels) = loadData(train_path)
@@ -196,8 +203,10 @@ if __name__ == '__main__':
 
     # construct model
     p = Perceptron(num_features)
-    p.train(train_features, train_labels, 30)
+    p.train(train_features, train_labels, 50)
     precision = p.test(test_features, test_labels)
-    print(precision)
+    end = time.time()
+    print("precision: %f" % precision)
+    print("spend time: %f" % (end - start))
 
 
