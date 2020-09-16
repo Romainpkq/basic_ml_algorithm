@@ -23,13 +23,15 @@ from support_function.support import load_data
 
 
 class Node:
-    def __init__(self, val, left=None, right=None):
+    def __init__(self, val, axis, label, left=None, right=None):
         """
         :param val: the value of the node, it is data that separate the dataset
         """
         self.val = val
         self.left = left
         self.right = right
+        self.axis = axis
+        self.label = label
 
 
 class kdTree:
@@ -44,19 +46,40 @@ class kdTree:
             A Node(val, None, None)
         """
         if len(ls) == 1:
-            return Node(ls[0])
+            return Node(ls[0], axis, labels[0])
 
         else:
             ls1 = ls[ls[:, axis].argsort()]
             labels1 = labels[ls[:, axis].argsort()]
-            node = Node(ls[len(ls)//2], None, None)
+            node = Node(ls[len(ls)//2], axis, labels[len(ls)//2], None, None)
             node.right = self.construct(ls1[len(ls)//2:], labels1[len(ls)//2:], axis + 1)
             node.left = self.construct(ls1[:len(ls)//2], labels1[:len(ls)//2], axis+1)
             return node
 
-    def search(self, target):
+    def search(self, root1, target):
         """
+        This is a test that we just choose the leaf node label as the label
+        :param root1: the current Node
         :param target: the target point x
+        return:
+            label
         """
+        if target[root1.axis] < root1.val[root1.axis] and not root1.left:
+            result = self.search(root1.left, target)
 
+        elif target[root1.axis] >= root1.val[root1.axis] and not root1.right:
+            result = self.search(root1.right, target)
 
+        else:
+            return root1.label
+
+        return result.label
+
+    def distance(self, result, target):
+        """
+        :param result: a node that the current mini-distance point
+        :param target: a node of the target
+        return:
+            the distance between the two point, we use L2
+        """
+        return (result - target) * (result - target)
