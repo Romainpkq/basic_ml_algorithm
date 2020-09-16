@@ -11,6 +11,15 @@ precision:
 '''
 
 from support_function.support import load_data
+# 过程
+# 1. 获取所有的数据点{(X11, X12, ..., X1n), ...}, 初始化 left=[], right = []
+# 2. for i in range(n):
+#    sort left, sort right
+#    median_left = value1
+#    median_right = value2
+#
+# def tree(left):
+#   return Node(value,)
 
 
 class Node:
@@ -25,20 +34,29 @@ class Node:
 
 class kdTree:
     def __init__(self, features, labels):
-        root, left, right = self.sort(features, 0)
-        self.root = root
-        self.right = right
-        self.left = left
-        pass
+        self.root = self.construct(features, labels, 0)
 
-    def sort(self, data, axis):
-        data_change = list(enumerate(data))
-        data_change = list(sorted(data_change, key=lambda x: x[1][axis], reverse=False))
-        root_index = data_change[len(data_change)//2][0]
-        root = data[root_index]
-        left_index = [data_change[i][0] for i in range(len(data_change)//2)]
-        right_index = [data_change[i][0] for i in range(len(data_change)//2)]
-        left = data[left_index]
-        right = data[right_index]
+    def construct(self, ls, labels, axis):
+        """
+        :param ls: the list of all the data.
+        :param axis: according axis dimension to split the data
+        return:
+            A Node(val, None, None)
+        """
+        if len(ls) == 1:
+            return Node(ls[0])
 
-        return root, left, right
+        else:
+            ls1 = ls[ls[:, axis].argsort()]
+            labels1 = labels[ls[:, axis].argsort()]
+            node = Node(ls[len(ls)//2], None, None)
+            node.right = self.construct(ls1[len(ls)//2:], labels1[len(ls)//2:], axis + 1)
+            node.left = self.construct(ls1[:len(ls)//2], labels1[:len(ls)//2], axis+1)
+            return node
+
+    def search(self, target):
+        """
+        :param target: the target point x
+        """
+
+
