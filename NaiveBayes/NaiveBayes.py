@@ -16,5 +16,15 @@ class NaiveB:
 
     def train(self, train_data, train_label):
         """
-        :param train_data: the datasets of train
+        :param train_data: the datasets of train, an array, (number_data, features)
+        :param train_label: the label of according train dataset, an array, (number_data)
+        Update the pro_prior and pro_con parameter
         """
+
+        # get the prior probability
+        for i in range(len(self.classes)):
+            self.pro_prior[i] = train_label.count(self.classes[i])
+
+        for j in train_data:
+            pass
+
